@@ -1,0 +1,5 @@
+#!/bin/sh
+# FreeBSD / OPNsense Startup Hook: /usr/local/etc/rc.syshook.d/start/99-suricata-shipper
+# Starts the Suricata EVE JSON shipper daemon automatically on firewall boot.
+
+nohup /usr/local/bin/python3 /root/scripts/suricata_shipper.py >/var/log/suricata_shipper.log 2>&1 &
