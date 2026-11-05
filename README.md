@@ -98,6 +98,7 @@ chmod +x /usr/local/etc/rc.syshook.d/start/99-suricata-shipper
   1. Implemented **inode tracking** (`os.stat(filepath).st_ino != inode`) inside `tail_eve_log()` so the generator detects file replacement immediately and reopens the active `eve.json` file descriptor without dropping alerts.
   2. Registered an executable startup hook inside `/usr/local/etc/rc.syshook.d/start/99-suricata-shipper` using `nohup` and standard output redirection to `/var/log/suricata_shipper.log`.
 
-### 3. Webhook Routing Across Isolated Subnets
-* **Symptom:** Outbound HTTP POST requests from the OPNsense BSD host to the containerized n8n webhook endpoint timed out across isolated VLAN boundaries.
-* **Resolution:** Verified packet traversal between the OPNsense host and the containerized n8n endpoint over Tailscale/LAN using `curl -X POST` probes and configured local firewall floating rules to permit outbound telemetry traffic on port `5678`.
+### 3. Alert Floods & Webhook Timeouts to n8n / Ollama
+* **Root Cause:** Forwarding every low-priority informational Suricata event overwhelmed the local Ollama LLM inference queue and caused HTTP timeout errors across the subnet/Tailscale bridge.
+* **Resolution:** Filtered events strictly to `event_type == "alert"` with `severity <= 2` inside `suricata_shipper.py` before firing the HTTP `POST` request to the n8n webhook, and verified packet traversal across isolated subnets using `curl -X POST` probes.
+
